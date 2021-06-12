@@ -1,0 +1,47 @@
+!@encoding CP1252
+model Prajakta
+uses "mmxprs"; !gain access to the Xpress-Optimizer solver
+
+!optional parameters section
+parameters
+DATAFILE = "data5.dat"
+end-parameters
+
+!!!!!sample declarations
+declarations
+	N: integer
+	M: integer
+end-declarations
+
+initializations from DATAFILE
+	N
+	M
+end-initializations
+
+declarations
+	R=1..M !set of routes
+	C=1..N !set of clients
+	Cost: array(R) of real
+	yval: array(R) of mpvar
+	RouteClient: array(C,R) of integer
+end-declarations
+
+
+forall(j in R) yval(j) is_binary
+
+initializations from DATAFILE
+	Cost
+	RouteClient
+end-initializations
+
+CostT := sum(j in R) Cost(j)*yval(j)
+!---------------------------------------------
+
+forall(i in C) sum(j in R) RouteClient(i,j)*yval(j) >= 1
+
+!!!!objective function
+minimize(CostT)
+writeln("Total Cost = ",getobjval)
+forall(j in R | getsol(yval(j))>0)
+	writeln("Route ", j, " is selected")
+end-model
